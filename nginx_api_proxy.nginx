@@ -1,0 +1,27 @@
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://frontend/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr; 
+    }
+
+    location /api/bookworm/ {
+        proxy_pass http://bookworm/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /api/census/ {
+        proxy_pass http://census/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /api/mcc/ {
+        proxy_pass http://mcc/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
