@@ -1,0 +1,12 @@
+[submodule "Mission-Control-Center"]
+	path = mcc
+	url = https://github.com/postomats/Mission-Control-Center.git
+[submodule "census"]
+	path = census
+	url = https://github.com/postomats/census.git
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/postomats/postomats_frontend.git
+[submodule "bookworm"]
+	path = bookworm
+	url = https://github.com/postomats/bookworm.git
