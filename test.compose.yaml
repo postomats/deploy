@@ -2,27 +2,49 @@ version: '3'
 
 services:
   router:
+    restart: always
     image: 'nginx'
     ports:
       - 80:80
     volumes:
       - ./nginx_api_proxy.nginx:/etc/nginx/conf.d/default.conf
-  
-  frontend:
-    build:
-      context: ./frontend
+    depends_on:
+      - frontend
+      - mcc
+      - census
+      - bookworm
 
   mcc:
     build:
       context: ./mcc
+    command: '--root-path /api/mcc'
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./test.env
   
   census:
     build:
       context: ./census
+    command: '--root-path /api/census'
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./test.env
 
   bookworm:
     build:
       context: ./bookworm
+    command: '--root-path /api/bookworm'
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./test.env
+    ports: 
+      - 8001:80
   
   db:
     image: postgres
