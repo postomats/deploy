@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
   router:
@@ -9,18 +9,24 @@ services:
     volumes:
       - ./nginx_api_proxy.nginx:/etc/nginx/conf.d/default.conf
     depends_on:
-      - frontend
-      - mcc
       - census
       - bookworm
+      - frontend
+      - mcc
+    networks:
+      - backend
+    
   
   frontend:
     image: 'nginx'
     volumes:
       - './frontend/frontend:/var/www/html'
       - './frontend/nginx.conf:/etc/nginx/conf.d/default.conf'
+    networks:
+      - backend
 
   mcc:
+    restart: always
     build:
       context: ./mcc
     command: '--root-path /api/mcc'
@@ -29,6 +35,15 @@ services:
         condition: service_healthy
     env_file:
       - ./test.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost/docs"]
+      interval: 1m
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+      - custom_bridge_network
+      
   
   census:
     build:
@@ -39,6 +54,13 @@ services:
         condition: service_healthy
     env_file:
       - ./test.env
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost/docs"]
+      interval: 1m
+      timeout: 5s
+      retries: 5
 
   bookworm:
     build:
@@ -51,10 +73,14 @@ services:
       - ./test.env
     ports: 
       - 8001:80
+    networks:
+      - backend
   
   db:
     image: postgres
     user: postgres
+    networks:
+      - backend
     env_file:
       - ./test.env
     healthcheck:
@@ -64,3 +90,8 @@ services:
       retries: 5
     ports:
       - 5432:5432
+
+
+networks:
+  backend:
+  custom_bridge_network:
