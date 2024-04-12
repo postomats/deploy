@@ -1,0 +1,99 @@
+version: '3.7'
+
+services:
+  router:
+    deploy:
+      restart_policy:
+        condition: any
+      replicas: 1
+      image: nginx
+      ports:
+        - '80:80'
+      volumes:
+        - ../nginx:/etc/nginx/conf.d/default.conf
+      networks:
+        - backend
+
+  frontend:
+    deploy:
+      restart_policy:
+        condition: any
+      replicas: 1
+      image: nginx
+      volumes:
+        - './frontend/frontend:/var/www/html'
+        - './frontend/nginx.conf:/etc/nginx/conf.d/default.conf'
+      networks:
+        - backend
+
+  mcc:
+    deploy:
+      restart_policy:
+        condition: any
+      replicas: 1
+      image: your_custom_image
+        command: '--root-path /api'
+      env_file:
+        - ./test.env
+      healthcheck:
+        test: ["CMD-SHELL", "curl http://localhost/docs"]
+        interval: 1m
+        timeout: 5s
+        retries: 5
+      networks:
+        - backend
+        - potomat_network
+
+  census:
+    deploy:
+      restart_policy:
+        condition: any
+      replicas: 1
+      image: your_custom_image
+      command: '--root-path /api'
+      env_file:
+        - ./test.env
+      networks:
+        - backend
+      healthcheck:
+        test: ["CMD-SHELL", "curl http://localhost/docs"]
+        interval: 1m
+        timeout: 5s
+        retries: 5
+
+  bookworm:
+    deploy:
+      restart_policy:
+        condition: any
+      replicas: 1
+      image: your_custom_image
+      command: '--root-path /api'
+      env_file:
+        - ./test.env
+      networks:
+        - backend
+
+  db:
+    deploy:
+      restart_policy:
+        condition: any
+      replicas: 1
+      image: postgres
+      user: postgres
+      networks:
+        - backend
+      env_file:
+        - ./test.env
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U test"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+      ports:
+        - '5432:5432'
+
+networks:
+  backend:
+    driver: overlay
+  potomat_network:
+    driver: overlay
